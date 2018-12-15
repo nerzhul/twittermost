@@ -268,22 +268,24 @@ func (b *Bot) checkTimeline() {
 func (b *Bot) postTweet(tweet twitter.Tweet) {
 	// TODO quoted tweets?
 	text := fmt.Sprintf(
-		"@[%s](https://twitter.com/%s) [tweeted](https://twitter.com/statuses/%d)",
-		tweet.User.ScreenName, tweet.User.ScreenName, tweet.ID)
+		"![Mattermost](%s) *%s* @[%s](https://twitter.com/%s) [tweeted](https://twitter.com/statuses/%d)",
+		tweet.User.ProfileImageURLHttps,
+		tweet.User.ScreenName,
+		tweet.User.Name, tweet.User.ScreenName, tweet.ID)
 
 	if tweet.Retweeted {
 		text += fmt.Sprintf(" RT @[%s](https://twitter.com/%s)\n> ",
 			tweet.RetweetedStatus.User.ScreenName,
 			tweet.RetweetedStatus.User.ScreenName)
 		if !tweet.RetweetedStatus.Truncated {
-			text += tweet.RetweetedStatus.Text
+			text += tweet.RetweetedStatus.FullText
 		} else {
 			text += tweet.RetweetedStatus.ExtendedTweet.FullText
 		}
 	} else {
 		text += "\n> "
 		if !tweet.Truncated {
-			text += tweet.Text
+			text += tweet.FullText
 		} else {
 			text += tweet.ExtendedTweet.FullText
 		}
