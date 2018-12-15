@@ -1,3 +1,5 @@
 /twittermost
 */mattermost.json
 */config.json
+go.sum
+.idea/*

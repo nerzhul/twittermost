@@ -358,8 +358,9 @@ func (b *Bot) handleFollowers(post *model.Post, args []string) {
 		return
 	}
 
-	var friends []string = []string{}
+	friends := []string{}
 	var cursor int64
+
 	for {
 		pars := twitter.FriendListParams{
 			Cursor:              cursor,
@@ -377,8 +378,11 @@ func (b *Bot) handleFollowers(post *model.Post, args []string) {
 				friends = append(friends, u.ScreenName)
 			}
 			cursor = resp.NextCursor
+			fmt.Println("cursor: %d", cursor)
 		}
-		break
+		if cursor == 0 {
+			break
+		}
 	}
 
 	b.replyToPost(fmt.Sprintf("I'm following: %#v", friends), post)
@@ -520,7 +524,7 @@ func (b *Bot) setupGracefulShutdown() {
 func (b *Bot) setupTimelineCheck() {
 	b.checkTicker = time.NewTicker(time.Second * time.Duration(b.conf.CheckInterval))
 	go func() {
-		for _ = range b.checkTicker.C {
+		for range b.checkTicker.C {
 			b.checkTimeline()
 		}
 	}()
