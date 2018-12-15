@@ -267,32 +267,40 @@ func (b *Bot) checkTimeline() {
 
 func (b *Bot) postTweet(tweet twitter.Tweet) {
 	// TODO quoted tweets?
-	text := fmt.Sprintf(
-		"![Mattermost](%s) *%s* @[%s](https://twitter.com/%s) [tweeted](https://twitter.com/statuses/%d)",
-		tweet.User.ProfileImageURLHttps,
-		tweet.User.Name,
-		tweet.User.ScreenName, tweet.User.ScreenName, tweet.ID)
+
+	tweetText := ""
 
 	if tweet.Retweeted {
-		text += fmt.Sprintf(" RT @[%s](https://twitter.com/%s)\n> ",
+		tweetText += fmt.Sprintf(" RT @[%s](https://twitter.com/%s)\n> ",
 			tweet.RetweetedStatus.User.ScreenName,
 			tweet.RetweetedStatus.User.ScreenName)
 		if !tweet.RetweetedStatus.Truncated {
-			text += tweet.RetweetedStatus.FullText
+			tweetText += tweet.RetweetedStatus.FullText
 		} else {
-			text += tweet.RetweetedStatus.ExtendedTweet.FullText
+			tweetText += tweet.RetweetedStatus.ExtendedTweet.FullText
 		}
 	} else {
-		text += "\n> "
+		tweetText += "\n> "
 		if !tweet.Truncated {
-			text += tweet.FullText
+			tweetText += tweet.FullText
 		} else {
-			text += tweet.ExtendedTweet.FullText
+			tweetText += tweet.ExtendedTweet.FullText
 		}
 	}
 	myPost := &model.Post{
 		ChannelId: b.channel.Id,
-		Message:   text,
+		Props: map[string]interface{}{
+			"attachments": []model.SlackAttachment{
+				{
+					Color:     "#7800FF",
+					Pretext:   "",
+					Text:      tweetText,
+					ThumbURL:  tweet.User.ProfileImageURLHttps,
+					Title:     tweet.User.Name,
+					TitleLink: fmt.Sprintf("https://twitter.com/statuses/%d", tweet.ID),
+				},
+			},
+		},
 	}
 	if _, result := b.mm.CreatePost(myPost); result.Error != nil {
 		log.Printf("postTweet failed: %s", result.Error)
