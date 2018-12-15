@@ -269,13 +269,23 @@ func (b *Bot) postTweet(tweet twitter.Tweet) {
 	text := fmt.Sprintf(
 		"@[%s](https://twitter.com/%s) [tweeted](https://twitter.com/statuses/%d)",
 		tweet.User.ScreenName, tweet.User.ScreenName, tweet.ID)
+
 	if tweet.Retweeted {
-		text += fmt.Sprintf(" RT @[%s](https://twitter.com/%s)\n> %s",
+		text += fmt.Sprintf(" RT @[%s](https://twitter.com/%s)\n> ",
 			tweet.RetweetedStatus.User.ScreenName,
-			tweet.RetweetedStatus.User.ScreenName,
-			tweet.RetweetedStatus.FullText)
+			tweet.RetweetedStatus.User.ScreenName)
+		if !tweet.RetweetedStatus.Truncated {
+			text += tweet.RetweetedStatus.Text
+		} else {
+			text += tweet.RetweetedStatus.ExtendedTweet.FullText
+		}
 	} else {
-		text += "\n> " + tweet.FullText
+		text += "\n> "
+		if !tweet.Truncated {
+			text += tweet.Text
+		} else {
+			text += tweet.ExtendedTweet.FullText
+		}
 	}
 	myPost := &model.Post{
 		ChannelId: b.channel.Id,
