@@ -270,8 +270,8 @@ func (b *Bot) postTweet(tweet twitter.Tweet) {
 	text := fmt.Sprintf(
 		"![Mattermost](%s) *%s* @[%s](https://twitter.com/%s) [tweeted](https://twitter.com/statuses/%d)",
 		tweet.User.ProfileImageURLHttps,
-		tweet.User.ScreenName,
-		tweet.User.Name, tweet.User.ScreenName, tweet.ID)
+		tweet.User.Name,
+		tweet.User.ScreenName, tweet.User.ScreenName, tweet.ID)
 
 	if tweet.Retweeted {
 		text += fmt.Sprintf(" RT @[%s](https://twitter.com/%s)\n> ",
