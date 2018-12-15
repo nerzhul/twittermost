@@ -266,16 +266,16 @@ func (b *Bot) checkTimeline() {
 
 func (b *Bot) postTweet(tweet twitter.Tweet) {
 	// TODO quoted tweets?
-	var text string = fmt.Sprintf(
+	text := fmt.Sprintf(
 		"@[%s](https://twitter.com/%s) [tweeted](https://twitter.com/statuses/%d)",
 		tweet.User.ScreenName, tweet.User.ScreenName, tweet.ID)
 	if tweet.Retweeted {
 		text += fmt.Sprintf(" RT @[%s](https://twitter.com/%s)\n> %s",
 			tweet.RetweetedStatus.User.ScreenName,
 			tweet.RetweetedStatus.User.ScreenName,
-			tweet.RetweetedStatus.Text)
+			tweet.RetweetedStatus.FullText)
 	} else {
-		text += "\n> " + tweet.Text
+		text += "\n> " + tweet.FullText
 	}
 	myPost := &model.Post{
 		ChannelId: b.channel.Id,
