@@ -243,8 +243,9 @@ func (b *Bot) handleWebSocketEvent(event *model.WebSocketEvent) {
 
 func (b *Bot) checkTimeline() {
 	pars := twitter.HomeTimelineParams{
-		Count:   b.conf.MaxTweets,
-		SinceID: b.data.LastPost,
+		Count:     b.conf.MaxTweets,
+		SinceID:   b.data.LastPost,
+		TweetMode: "extended",
 	}
 	tweets, _, err := b.tw.Timelines.HomeTimeline(&pars)
 	if err != nil {
