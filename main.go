@@ -280,28 +280,49 @@ func (b *Bot) postTweet(tweet twitter.Tweet) {
 			tweetText += tweet.RetweetedStatus.ExtendedTweet.FullText
 		}
 	} else {
-		tweetText += "\n> "
 		if !tweet.Truncated {
 			tweetText += tweet.FullText
 		} else {
 			tweetText += tweet.ExtendedTweet.FullText
 		}
 	}
+
+	postAttachements := []model.SlackAttachment{
+		{
+			Pretext: "",
+			Fields: []*model.SlackAttachmentField{
+				{
+					Value: tweetText,
+				},
+			},
+			Text:      "",
+			ThumbURL:  tweet.User.ProfileImageURLHttps,
+			Title:     tweet.User.Name,
+			TitleLink: fmt.Sprintf("https://twitter.com/statuses/%d", tweet.ID),
+		},
+	}
+
+	if tweet.ExtendedEntities != nil && tweet.ExtendedEntities.Media != nil {
+		for i, media := range tweet.ExtendedEntities.Media {
+			// First media is on the original post
+			if i == 0 {
+				postAttachements[0].ImageURL = media.MediaURLHttps
+			} else { // other are on a new post
+				mediaAttachment := model.SlackAttachment{
+					ImageURL: media.MediaURLHttps,
+				}
+				postAttachements = append(postAttachements, mediaAttachment)
+			}
+		}
+	}
+
 	myPost := &model.Post{
 		ChannelId: b.channel.Id,
 		Props: map[string]interface{}{
-			"attachments": []model.SlackAttachment{
-				{
-					Color:     "#7800FF",
-					Pretext:   "",
-					Text:      tweetText,
-					ThumbURL:  tweet.User.ProfileImageURLHttps,
-					Title:     tweet.User.Name,
-					TitleLink: fmt.Sprintf("https://twitter.com/statuses/%d", tweet.ID),
-				},
-			},
+			"attachments": postAttachements,
 		},
 	}
+
 	if _, result := b.mm.CreatePost(myPost); result.Error != nil {
 		log.Printf("postTweet failed: %s", result.Error)
 	}
