@@ -303,9 +303,16 @@ func (b *Bot) postTweet(tweet twitter.Tweet) {
 	}
 
 	if tweet.ExtendedEntities != nil && tweet.ExtendedEntities.Media != nil {
-		for i, media := range tweet.ExtendedEntities.Media {
+		appliedAttachment := 0
+
+		for _, media := range tweet.ExtendedEntities.Media {
+			// Ignore non photo media
+			if media.Type != "photo" {
+				continue
+			}
+
 			// First media is on the original post
-			if i == 0 {
+			if appliedAttachment == 0 {
 				postAttachements[0].ImageURL = media.MediaURLHttps
 			} else { // other are on a new post
 				mediaAttachment := model.SlackAttachment{
@@ -313,6 +320,8 @@ func (b *Bot) postTweet(tweet twitter.Tweet) {
 				}
 				postAttachements = append(postAttachements, mediaAttachment)
 			}
+
+			appliedAttachment++
 		}
 	}
 
