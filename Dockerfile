@@ -1,10 +1,15 @@
-FROM golang:alpine
+FROM golang:1.11.3
 
 WORKDIR /go/src/app
 COPY . .
+RUN GO111MODULE=on go build ./... && GO111MODULE=on go install .
 
-RUN apk add --no-cache git
-RUN go-wrapper download   # "go get -d -v ."
-RUN go-wrapper install    # "go install -v ."
+FROM alpine:latest
+COPY --from=0 /go/bin/twittermost /usr/bin/twittermost
+RUN apk add --no-cache ca-certificates && \
+	adduser -D -h /usr/local/twittermost twittermost && \
+	chown -R twittermost /usr/local/twittermost
 
-CMD ["go-wrapper", "run", "-config","/go/src/app/conf/config.json"]
+USER twittermost
+WORKDIR /usr/local/twittermost
+CMD ["/usr/bin/twittermost", "-config", "/etc/twittermost/config.json"]
