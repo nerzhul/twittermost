@@ -203,7 +203,11 @@ func (b *Bot) setupMattermost() {
 func (b *Bot) setupWebSocketClient() error {
 	log.Println("Connecting websocket to listen for events ...")
 	u, _ := url.Parse(b.conf.Url)
-	u.Scheme = "wss" // no one should use non-SSL anyway
+	if u.Scheme == "http" {
+		u.Scheme = "ws"
+	} else {
+		u.Scheme = "wss" // no one should use non-SSL anyway
+	}
 
 	if ws, err := model.NewWebSocketClient4(u.String(), b.mm.AuthToken); err != nil {
 		log.Printf("  failed: %s", err)
