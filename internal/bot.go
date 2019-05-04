@@ -45,6 +45,9 @@ type BotConf struct {
 	AccessSecret   string
 	MaxTweets      int
 	CheckInterval  int
+
+	ServicePort         int
+	ServiceAllowedToken string
 }
 
 type Bot struct {
@@ -655,6 +658,9 @@ func (b *Bot) Logf(msg string, args ...interface{}) {
 
 // slash command handling
 func (b *Bot) setupWebhookHandler() {
+	// initialize port & command handler
+	b.webhookHandler.SetPort(b.conf.ServicePort)
+	b.webhookHandler.SetAllowedToken(b.conf.ServiceAllowedToken)
 	b.webhookHandler.RegisterSlashCommandHandler("/slash", b.handleSlashCommand)
 	go func() {
 		if err := b.webhookHandler.Start(); err != nil {

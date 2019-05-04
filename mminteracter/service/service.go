@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/nerzhul/twittermost/mminteracter/slashcommand"
@@ -9,6 +10,8 @@ import (
 type Service struct {
 	slashCommandRouter map[string]SlashCommandHandler
 	e                  *echo.Echo
+	port               int
+	token              string
 }
 
 func New() *Service {
@@ -22,6 +25,10 @@ func New() *Service {
 	return s
 }
 
+func (s *Service) SetPort(port int) {
+	s.port = port
+}
+
 func (s *Service) RegisterSlashCommandHandler(path string, h SlashCommandHandler) {
 	s.slashCommandRouter[path] = h
 	s.e.POST(path, s.handleSlashCommand)
@@ -33,7 +40,12 @@ func (s *Service) handleSlashCommand(c echo.Context) error {
 		if err := cmd.Deserialize(c); err != nil {
 			return c.JSON(400, err)
 		}
-		// @TODO: verify if we have all we need in the request
+
+		// Validate the token
+		if len(s.token) != 0 && s.token != cmd.Token {
+			return c.String(403, "Invalid token.")
+		}
+
 		return h(cmd, c)
 	} else {
 		return c.JSON(405, nil)
@@ -42,5 +54,9 @@ func (s *Service) handleSlashCommand(c echo.Context) error {
 
 func (s *Service) Start() error {
 	// Start echo server
-	return s.e.Start(":8080")
+	return s.e.Start(fmt.Sprintf(":%d", s.port))
+}
+
+func (s *Service) SetAllowedToken(token string) {
+	s.token = token
 }

@@ -14,5 +14,8 @@
     "AccessToken":"twitter access token",
     "AccessSecret":"twitter access secret",
 
-    "DataPath":"conf/mattermost.json"
+    "DataPath":"conf/mattermost.json",
+
+    "ServicePort": 8080,
+    "ServiceAllowedToken": "",
 }

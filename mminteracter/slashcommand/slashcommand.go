@@ -13,9 +13,9 @@ type Query struct {
 	TeamDomain  string
 	TeamID      string
 	Text        string
-	token       string
 	UserID      string
 	UserName    string
+	Token       string
 }
 
 func (scq *Query) Deserialize(c echo.Context) error {
@@ -26,6 +26,7 @@ func (scq *Query) Deserialize(c echo.Context) error {
 	scq.TeamDomain = c.FormValue("team_domain")
 	scq.TeamID = c.FormValue("team_id")
 	scq.Text = c.FormValue("text")
+	scq.Token = c.FormValue("token")
 	scq.UserID = c.FormValue("user_id")
 	scq.UserName = c.FormValue("user_name")
 
