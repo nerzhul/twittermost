@@ -163,7 +163,7 @@ func (b *Bot) setupMattermost() {
 		}
 	}
 
-	b.setupWebSocketClient()
+	_ = b.setupWebSocketClient()
 
 	go func() {
 		for {
@@ -401,7 +401,7 @@ func (b *Bot) handleFollowers(post *model.Post, args []string) {
 		return
 	}
 
-	friends := []string{}
+	var friends []string
 	var cursor int64
 
 	for {
@@ -421,7 +421,6 @@ func (b *Bot) handleFollowers(post *model.Post, args []string) {
 				friends = append(friends, u.ScreenName)
 			}
 			cursor = resp.NextCursor
-			fmt.Println("cursor: %d", cursor)
 		}
 		if cursor == 0 {
 			break
@@ -545,7 +544,7 @@ func (b *Bot) setupGracefulShutdown() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	go func() {
-		for _ = range c {
+		for range c {
 			log.Printf("Interrupt received --- shutting down...")
 			b.running = false
 			if b.ws != nil {
