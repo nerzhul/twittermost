@@ -6,7 +6,10 @@ import (
 	"github.com/cenkalti/backoff"
 	"github.com/dghubble/go-twitter/twitter"
 	"github.com/dghubble/oauth1"
+	"github.com/labstack/echo/v4"
 	"github.com/mattermost/mattermost-server/model"
+	"github.com/nerzhul/twittermost/mminteracter/service"
+	"github.com/nerzhul/twittermost/mminteracter/slashcommand"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -18,7 +21,7 @@ import (
 )
 
 type botData struct {
-	Trusted  map[string]bool // userId -> bool map of trusted users
+	Trusted  map[string]bool // userID -> bool map of trusted users
 	LastPost int64           // id of last read twitter id
 }
 
@@ -59,6 +62,9 @@ type Bot struct {
 	debugChannel *model.Channel // debugging channel
 	ws           *model.WebSocketClient
 
+	// mattermost slashcommand handler
+	webhookHandler *service.Service
+
 	// twitter
 	tw          *twitter.Client
 	twu         *twitter.User
@@ -68,7 +74,11 @@ type Bot struct {
 type commandHandler func(*model.Post, []string)
 
 func NewBot(conf BotConf) (b *Bot) {
-	b = &Bot{conf: conf}
+	b = &Bot{
+		conf:           conf,
+		webhookHandler: service.New(),
+	}
+
 	b.commandHandlers = map[string]commandHandler{
 		"ping":      b.handlePing,
 		"follow":    b.handleFollow,
@@ -79,6 +89,7 @@ func NewBot(conf BotConf) (b *Bot) {
 		"check":     b.handleCheck,
 		"clear":     b.handleClear,
 	}
+
 	return
 }
 
@@ -580,6 +591,7 @@ func (b *Bot) Run() {
 	b.running = true
 
 	b.setupGracefulShutdown()
+	b.setupWebhookHandler()
 	b.loadData()
 	b.setupTwitter()
 	b.setupMattermost()
@@ -639,4 +651,18 @@ func (b *Bot) Logf(msg string, args ...interface{}) {
 	if _, result := b.mm.CreatePost(post); result.Error != nil {
 		log.Printf("Failed to send debug message: %s", result.Error)
 	}
+}
+
+// slash command handling
+func (b *Bot) setupWebhookHandler() {
+	b.webhookHandler.RegisterSlashCommandHandler("/slash", b.handleSlashCommand)
+	go func() {
+		if err := b.webhookHandler.Start(); err != nil {
+			log.Fatalf("Webhook handler fatal error: %s", err.Error())
+		}
+	}()
+}
+
+func (b *Bot) handleSlashCommand(query slashcommand.Query, c echo.Context) error {
+	return c.JSON(501, nil)
 }
