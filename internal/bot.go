@@ -666,6 +666,7 @@ func (b *Bot) setupWebhookHandler() {
 	b.webhookHandler.SetPort(b.conf.ServicePort)
 	b.webhookHandler.SetAllowedToken(b.conf.ServiceAllowedToken)
 	b.webhookHandler.RegisterSlashCommandHandler("/slash", b.handleSlashCommand)
+	b.webhookHandler.RegisterHealthcheck("/health", b.handleHealthcheck)
 	go func() {
 		if err := b.webhookHandler.Start(); err != nil {
 			log.Fatalf("Webhook handler fatal error: %s", err.Error())
@@ -675,4 +676,26 @@ func (b *Bot) setupWebhookHandler() {
 
 func (b *Bot) handleSlashCommand(query slashcommand.Query, c echo.Context) error {
 	return c.JSON(501, nil)
+}
+
+func (b *Bot) handleHealthcheck(c echo.Context) error {
+	rc := 200
+	status := service.HealthcheckStatus{
+		Status:  "ok",
+		Message: "",
+	}
+
+	if b.ws == nil {
+		rc = 500
+		status.Status = "failure"
+		status.Message = "Mattermost websocket not working"
+	}
+
+	if b.twu == nil {
+		rc = 500
+		status.Status = "failure"
+		status.Message = "Twitter connection not working"
+	}
+
+	return c.JSON(rc, status)
 }

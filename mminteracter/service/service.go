@@ -14,6 +14,11 @@ type Service struct {
 	token              string
 }
 
+type HealthcheckStatus struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
 func New() *Service {
 	s := &Service{}
 	// Echo instance
@@ -29,6 +34,9 @@ func (s *Service) SetPort(port int) {
 	s.port = port
 }
 
+func (s *Service) RegisterHealthcheck(path string, h echo.HandlerFunc) {
+	s.e.GET(path, h)
+}
 func (s *Service) RegisterSlashCommandHandler(path string, h SlashCommandHandler) {
 	s.slashCommandRouter[path] = h
 	s.e.POST(path, s.handleSlashCommand)
