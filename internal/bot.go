@@ -667,6 +667,7 @@ func (b *Bot) setupWebhookHandler() {
 	b.webhookHandler.SetAllowedToken(b.conf.ServiceAllowedToken)
 	b.webhookHandler.RegisterSlashCommandHandler("/slash", b.handleSlashCommand)
 	b.webhookHandler.RegisterHealthcheck("/health", b.handleHealthcheck)
+	b.webhookHandler.RegisterHealthcheck("/ready", b.handleReadinessCheck)
 	go func() {
 		if err := b.webhookHandler.Start(); err != nil {
 			log.Fatalf("Webhook handler fatal error: %s", err.Error())
@@ -676,6 +677,13 @@ func (b *Bot) setupWebhookHandler() {
 
 func (b *Bot) handleSlashCommand(query slashcommand.Query, c echo.Context) error {
 	return c.JSON(501, nil)
+}
+
+func (b *Bot) handleReadinessCheck(c echo.Context) error {
+	return c.JSON(200, service.HealthcheckStatus{
+		Status:  "ok",
+		Message: "",
+	})
 }
 
 func (b *Bot) handleHealthcheck(c echo.Context) error {
