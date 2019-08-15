@@ -679,14 +679,14 @@ func (b *Bot) handleSlashCommand(query slashcommand.Query, c echo.Context) error
 	return c.JSON(501, nil)
 }
 
-func (b *Bot) handleReadinessCheck(c echo.Context) error {
+func (b *Bot) handleHealthcheck(c echo.Context) error {
 	return c.JSON(200, service.HealthcheckStatus{
 		Status:  "ok",
 		Message: "",
 	})
 }
 
-func (b *Bot) handleHealthcheck(c echo.Context) error {
+func (b *Bot) handleReadinessCheck(c echo.Context) error {
 	rc := 200
 	status := service.HealthcheckStatus{
 		Status:  "ok",
