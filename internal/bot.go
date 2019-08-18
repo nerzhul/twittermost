@@ -25,31 +25,6 @@ type botData struct {
 	LastPost int64           // id of last read twitter id
 }
 
-type BotConf struct {
-	Url      string // URL to mattermost instance
-	DataPath string // path to data
-
-	// mattermost settings
-	User         string
-	Email        string
-	Password     string
-	Token        string
-	Team         string
-	Channel      string
-	DebugChannel string
-
-	// twitter settings
-	ConsumerKey    string
-	ConsumerSecret string
-	AccessToken    string
-	AccessSecret   string
-	MaxTweets      int
-	CheckInterval  int
-
-	ServicePort         int
-	ServiceAllowedToken string
-}
-
 type Bot struct {
 	commandHandlers map[string]commandHandler
 	conf            BotConf
