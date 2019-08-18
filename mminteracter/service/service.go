@@ -37,6 +37,7 @@ func (s *Service) SetPort(port int) {
 func (s *Service) RegisterHealthcheck(path string, h echo.HandlerFunc) {
 	s.e.GET(path, h)
 }
+
 func (s *Service) RegisterSlashCommandHandler(path string, h SlashCommandHandler) {
 	s.slashCommandRouter[path] = h
 	s.e.POST(path, s.handleSlashCommand)
