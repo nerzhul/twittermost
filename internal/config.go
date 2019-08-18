@@ -97,18 +97,6 @@ func (c *BotConf) loadFromEnv() {
 		log.Fatal(err.Error())
 	}
 
-	log.Println("Loaded configuration from env vars")
-}
-
-func (c *BotConf) Load() {
-	c.loadDefaultConfiguration()
-	err := c.loadFromFile()
-	if err != nil {
-		log.Printf("Failed to read config from file: %s\n", err)
-	}
-
-	c.loadFromEnv()
-
 	mattermostKubeUrl := os.Getenv("MATTERMOST_PORT")
 	if len(mattermostKubeUrl) > 0 {
 		log.Printf("[k8s discovery] MATTERMOST_PORT url found: %s\n", mattermostKubeUrl)
@@ -124,4 +112,16 @@ func (c *BotConf) Load() {
 		c.Url = fmt.Sprintf("%s://%s", mattermostParsedURL.Scheme, mattermostParsedURL.Host)
 		log.Printf("Mattermost URL set to: %s\n", c.Url)
 	}
+
+	log.Println("Loaded configuration from env vars")
+}
+
+func (c *BotConf) Load() {
+	c.loadDefaultConfiguration()
+	err := c.loadFromFile()
+	if err != nil {
+		log.Printf("Failed to read config from file: %s\n", err)
+	}
+
+	c.loadFromEnv()
 }
