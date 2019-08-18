@@ -105,4 +105,6 @@ func (c *BotConf) Load() {
 	if err != nil {
 		log.Printf("Failed to read config from file: %s\n", err)
 	}
+
+	c.loadFromEnv()
 }
