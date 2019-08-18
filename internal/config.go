@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 )
 
 type BotConf struct {
@@ -107,4 +108,20 @@ func (c *BotConf) Load() {
 	}
 
 	c.loadFromEnv()
+
+	mattermostHost, mattermostPort := os.Getenv("MATTERMOST_HOST"), os.Getenv("MATTERMOST_PORT")
+	mattermostProto := os.Getenv("MATTERMOST_PROTO")
+	if len(mattermostHost) > 0 && len(mattermostPort) > 0 && len(mattermostProto) > 0 {
+		log.Println("MATTERMOST_HOST, MATTERMOST_PORT and MATTERMOST_PROTO are set. Building URL from them.")
+		port, err := strconv.Atoi(mattermostPort)
+		if err != nil {
+			log.Fatalf("Invalid MATTERMOST_PORT variable: %s is not a port\n", mattermostPort)
+		}
+
+		if mattermostProto != "http" && mattermostProto != "https" {
+			log.Fatalf("Invalid MATTERMOST_PROTO, only http and https are supported.\n")
+		}
+
+		c.Url = fmt.Sprintf("%s://%s:%d", mattermostProto, mattermostHost, port)
+	}
 }
