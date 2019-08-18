@@ -8,8 +8,8 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
-	"strconv"
 )
 
 type BotConf struct {
@@ -109,19 +109,18 @@ func (c *BotConf) Load() {
 
 	c.loadFromEnv()
 
-	mattermostHost, mattermostPort := os.Getenv("MATTERMOST_HOST"), os.Getenv("MATTERMOST_PORT")
-	mattermostProto := os.Getenv("MATTERMOST_PROTO")
-	if len(mattermostHost) > 0 && len(mattermostPort) > 0 && len(mattermostProto) > 0 {
-		log.Println("MATTERMOST_HOST, MATTERMOST_PORT and MATTERMOST_PROTO are set. Building URL from them.")
-		port, err := strconv.Atoi(mattermostPort)
+	mattermostKubeUrl := os.Getenv("MATTERMOST_PORT")
+	if len(mattermostKubeUrl) > 0 {
+		log.Printf("[k8s discovery] MATTERMOST_PORT url found: %s\n", mattermostKubeUrl)
+		mattermostParsedURL, err := url.Parse(mattermostKubeUrl)
 		if err != nil {
-			log.Fatalf("Invalid MATTERMOST_PORT variable: %s is not a port\n", mattermostPort)
+			log.Fatalf("Unable to parse MATTERMOST_PORT URL: %v\n", err)
 		}
 
-		if mattermostProto != "http" && mattermostProto != "https" {
-			log.Fatalf("Invalid MATTERMOST_PROTO, only http and https are supported.\n")
+		if mattermostParsedURL.Scheme == "tcp" {
+			mattermostParsedURL.Scheme = "http"
 		}
 
-		c.Url = fmt.Sprintf("%s://%s:%d", mattermostProto, mattermostHost, port)
+		c.Url = fmt.Sprintf("%s://%s", mattermostParsedURL.Scheme, mattermostParsedURL.Host)
 	}
 }
