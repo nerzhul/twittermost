@@ -122,5 +122,6 @@ func (c *BotConf) Load() {
 		}
 
 		c.Url = fmt.Sprintf("%s://%s", mattermostParsedURL.Scheme, mattermostParsedURL.Host)
+		log.Printf("Mattermost URL set to: %s\n", c.Url)
 	}
 }
