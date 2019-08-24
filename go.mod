@@ -7,7 +7,8 @@ require (
 	github.com/dghubble/sling v1.2.0 // indirect
 	github.com/go-ldap/ldap v3.0.3+incompatible // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/labstack/echo/v4 v4.1.9
+	github.com/labstack/echo/v4 v4.1.10
 	github.com/lib/pq v1.1.1 // indirect
-	github.com/mattermost/mattermost-server v5.12.0+incompatible
+	github.com/mattermost/mattermost-server v5.14.0+incompatible
+	gitlab.com/nerzhul/libmatterbot v0.0.4
 )

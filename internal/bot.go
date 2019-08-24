@@ -8,8 +8,7 @@ import (
 	"github.com/dghubble/oauth1"
 	"github.com/labstack/echo/v4"
 	"github.com/mattermost/mattermost-server/model"
-	"github.com/nerzhul/twittermost/mminteracter/service"
-	"github.com/nerzhul/twittermost/mminteracter/slashcommand"
+	lm "gitlab.com/nerzhul/libmatterbot"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -41,7 +40,7 @@ type Bot struct {
 	ws           *model.WebSocketClient
 
 	// mattermost slashcommand handler
-	webhookHandler *service.Service
+	webhookHandler *lm.Listener
 
 	// twitter
 	tw          *twitter.Client
@@ -54,7 +53,7 @@ type commandHandler func(*model.Post, []string)
 func NewBot(conf BotConf) (b *Bot) {
 	b = &Bot{
 		conf:           conf,
-		webhookHandler: service.New(),
+		webhookHandler: lm.NewListener(conf.ServicePort),
 	}
 
 	b.commandHandlers = map[string]commandHandler{
@@ -638,7 +637,6 @@ func (b *Bot) Logf(msg string, args ...interface{}) {
 // slash command handling
 func (b *Bot) setupWebhookHandler() {
 	// initialize port & command handler
-	b.webhookHandler.SetPort(b.conf.ServicePort)
 	b.webhookHandler.SetAllowedToken(b.conf.ServiceAllowedToken)
 	b.webhookHandler.RegisterSlashCommandHandler("/slash", b.handleSlashCommand)
 	b.webhookHandler.RegisterHealthcheck("/health", b.handleHealthcheck)
@@ -650,12 +648,12 @@ func (b *Bot) setupWebhookHandler() {
 	}()
 }
 
-func (b *Bot) handleSlashCommand(query slashcommand.Query, c echo.Context) error {
+func (b *Bot) handleSlashCommand(query lm.Query, c echo.Context) error {
 	return c.JSON(501, nil)
 }
 
 func (b *Bot) handleHealthcheck(c echo.Context) error {
-	return c.JSON(200, service.HealthcheckStatus{
+	return c.JSON(200, lm.HealthcheckStatus{
 		Status:  "ok",
 		Message: "",
 	})
@@ -663,7 +661,7 @@ func (b *Bot) handleHealthcheck(c echo.Context) error {
 
 func (b *Bot) handleReadinessCheck(c echo.Context) error {
 	rc := 200
-	status := service.HealthcheckStatus{
+	status := lm.HealthcheckStatus{
 		Status:  "ok",
 		Message: "",
 	}
